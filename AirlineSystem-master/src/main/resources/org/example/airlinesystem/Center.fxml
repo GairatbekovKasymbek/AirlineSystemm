@@ -60,10 +60,11 @@
                   </TableView>
                   <Button layoutX="493.0" layoutY="178.0" mnemonicParsing="false" onAction="#onSearchFlights" text="Search" />
                   <Button layoutX="527.0" layoutY="325.0" mnemonicParsing="false" onAction="#loadAllFlights" text="Book" />
-                  <TextField fx:id="arrivalField1" layoutX="230.0" layoutY="159.0" />
+                  <TextField fx:id="dataPicker" layoutX="230.0" layoutY="150.0" />
                </children>
             </AnchorPane>
-         </content></Tab>
+         </content>
+      </Tab>
       <Tab text="Flights">
          <content>
             <TableView fx:id="flightsTableView" prefHeight="200.0" prefWidth="200.0">

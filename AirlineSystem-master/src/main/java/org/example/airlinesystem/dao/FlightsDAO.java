@@ -30,7 +30,7 @@ public class FlightsDAO {
 
         if (date != null && !date.isEmpty()) {
             query.append(hasConditions ? " AND" : " WHERE");
-            query.append(" TO_CHAR(departure_time, 'YYYY-MM-DD') = ?");
+            query.append(" departure_time = ?");
         }
 
         try (Connection connection = DatabaseConnection.getConnection();

@@ -4,6 +4,7 @@ module org.example.airlinesystem {
 
     requires com.dlsc.formsfx;
     requires java.sql;
+    opens org.example.airlinesystem.Controller to javafx.base;
 
     opens org.example.airlinesystem to javafx.fxml;
     exports org.example.airlinesystem;

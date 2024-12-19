@@ -10,14 +10,12 @@ public class SearchControl {
     private String departureCity;   // Город отправления
     private String arrivalCity;     // Город прибытия
     private String date;            // Дата поиска
-    private int customerId;         // ID клиента, выполняющего поиск
 
     // Конструктор
-    public SearchControl(String departureCity, String arrivalCity, String date, int customerId) {
+    public SearchControl(String departureCity, String arrivalCity, String date) {
         this.departureCity = departureCity;
         this.arrivalCity = arrivalCity;
         this.date = date;
-        this.customerId = customerId;
     }
 
     // Геттеры и сеттеры
@@ -45,46 +43,37 @@ public class SearchControl {
         this.date = date;
     }
 
-    public int getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(int customerId) {
-        this.customerId = customerId;
-    }
-
     // Метод поиска рейсов
-    public List<FlightsControl> searchFlights() throws SQLException {
+    public List<FlightsControl> searchFlights(String departure, String arrival, String date) throws SQLException {
         List<FlightsControl> flights = new ArrayList<>();
-        String query = "SELECT * FROM flights WHERE departure_city LIKE ? AND arrival_city LIKE ? AND departure_date LIKE ?";
+        String query = "SELECT * FROM flights WHERE departure_city LIKE ? " +
+                "AND arrival_city LIKE ? " +
+                "AND departure_time = ?";
 
-        // Открытие подключения к базе данных
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
 
-            statement.setString(1, departureCity.isEmpty() ? "%" : departureCity);
-            statement.setString(2, arrivalCity.isEmpty() ? "%" : arrivalCity);
+            // Установка параметров запроса
+            statement.setString(1, departure.isEmpty() ? "%" : departure);
+            statement.setString(2, arrival.isEmpty() ? "%" : arrival);
             statement.setString(3, date.isEmpty() ? "%" : date);
 
-            // Выполнение запроса
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    FlightsControl flight = new FlightsControl(
-                            resultSet.getString("id"),
-                            resultSet.getString("departure_city"),
-                            resultSet.getString("arrival_city"),
-                            resultSet.getString("departure_time"),
-                            resultSet.getString("arrival_time"),
-                            resultSet.getDouble("price")
-                    );
-                    flights.add(flight);
-                }
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                flights.add(new FlightsControl(
+                        resultSet.getString("flight_id"),
+                        resultSet.getString("departure_city"),
+                        resultSet.getString("arrival_city"),
+                        resultSet.getString("departure_time"),
+                        resultSet.getString("arrival_time"),
+                        resultSet.getDouble("price")
+                ));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-            throw new SQLException("Ошибка при выполнении запроса");
+            // Логгирование ошибки или обработка исключения
+            System.err.println("SQL Error: " + e.getMessage());
+            throw e; // Пробрасываем исключение дальше
         }
-
         return flights;
     }
 }

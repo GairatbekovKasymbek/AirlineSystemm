@@ -1,5 +1,7 @@
 package org.example.airlinesystem;
 
+import javafx.scene.control.cell.PropertyValueFactory;
+import org.example.airlinesystem.Controller.SearchControl;
 import org.example.airlinesystem.dao.FlightsDAO;
 import org.example.airlinesystem.dao.TicketDAO;
 import javafx.collections.FXCollections;
@@ -20,11 +22,9 @@ public class Center {
     @FXML
     private TextField departureField; // Поле для ввода города отправления
     @FXML
-    private TextField contetShow;
-    @FXML
     private TextField arrivalField; // Поле для ввода города прибытия
     @FXML
-    private TextField datePicker; // Поле для выбора даты
+    private TextField dataPicker; // Поле для выбора даты
     @FXML
     private TableView<FlightsControl> searchTableView; // Таблица для отображения рейсов
     @FXML
@@ -77,36 +77,64 @@ public class Center {
     private Label issueLabel;
     // Метод для поиска рейсов в "Search" Tab
     @FXML
+    public void initialize() {
+        // Настройка фабрик ячеек для каждой колонки
+        departureColumn.setCellValueFactory(new PropertyValueFactory<>("departureCity"));
+        arrivalColumn.setCellValueFactory(new PropertyValueFactory<>("arrivalCity"));
+        dateColumn.setCellValueFactory(new PropertyValueFactory<>("departureTime")); // Убедитесь, что поле название совпадает
+        priceColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
+    }
+    @FXML
     private void onSearchFlights() {
-        String departure = departureField.getText();
-        String arrival = arrivalField.getText();
-        String date = datePicker.getText();
-        String flightClass = null;
+        String departure = departureField.getText().trim();
+        String arrival = arrivalField.getText().trim();
+        String date = dataPicker.getText().trim();
 
-        // Проверяем, какой класс выбран
-        if (!economyRadioButton.isSelected() && !businessRadioButton.isSelected() && !firstClassRadioButton.isSelected()) {
-            // Handle the case where no class is selected
-            System.out.println("Error: You must select a flight class.");
-        } else {
-            // Check which radio button is selected and assign the corresponding class
-            if (economyRadioButton.isSelected()) {
-                flightClass = "Economy";
-            } else if (businessRadioButton.isSelected()) {
-                flightClass = "Business";
-            } else if (firstClassRadioButton.isSelected()) {
-                flightClass = "First Class";
-            }
+        // Определяем класс рейса, но не используем его
+        String flightClass = null;
+        if (economyRadioButton.isSelected()) {
+            flightClass = "Economy";
+        } else if (businessRadioButton.isSelected()) {
+            flightClass = "Business";
+        } else if (firstClassRadioButton.isSelected()) {
+            flightClass = "First Class";
         }
 
-        FlightsDAO flightsDAO = new FlightsDAO();
+        if (departure.isEmpty() || arrival.isEmpty() || date.isEmpty()) {
+            showAlert("Error", "Please fill in all fields.");
+            return;
+        }
+
+        // Инициализация SearchControl без передачи flightClass
+        SearchControl searchControl = new SearchControl(departure, arrival, date);
         try {
-            // Передаем все 4 параметра в метод searchFlights
-            List<FlightsControl> flights = flightsDAO.searchFlights(departure, arrival, date);
+            // Используем searchFlights без flightClass
+            List<FlightsControl> flights = searchControl.searchFlights(departure, arrival, date);
+            if (flights.isEmpty()) {
+                System.out.println("No flights found for the given criteria.");
+            } else {
+                System.out.println(flights.size() + " flights found.");
+                // Здесь можно обновить TableView с найденными рейсами
+            }if (flights.isEmpty()) {
+                System.out.println("No flights found for the given criteria.");
+            } else {
+                System.out.println(flights.size() + " flights found.");
+                // Здесь можно обновить TableView с найденными рейсами
+            }
             ObservableList<FlightsControl> observableFlights = FXCollections.observableArrayList(flights);
             searchTableView.setItems(observableFlights);
         } catch (SQLException e) {
+            showAlert("Database Error", "An error occurred while searching for flights.");
             e.printStackTrace();
         }
+    }
+
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
 

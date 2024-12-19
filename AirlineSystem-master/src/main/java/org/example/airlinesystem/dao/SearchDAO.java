@@ -12,8 +12,9 @@ public class SearchDAO {
 
     public List<FlightsControl> searchFlights(String departure, String arrival, String date, String flightClass) throws SQLException {
         List<FlightsControl> flights = new ArrayList<>();
-        String query = "SELECT * FROM flights WHERE departure_city LIKE ? AND arrival_city LIKE ? AND departure_date LIKE ?";
-
+        String query = "SELECT * FROM flights WHERE departure_city LIKE ? " +
+                "AND arrival_city LIKE ? " +
+                "AND departure_time = ?";
         // Если flightClass не пустой, добавляем условие в запрос
         if (flightClass != null && !flightClass.isEmpty()) {
             query += " AND flight_class = ?";
